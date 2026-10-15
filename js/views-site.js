@@ -35,7 +35,7 @@
   function contentCover(c) {
     var inner;
     if (c.type === 'video') inner = '<div class="play"></div>';
-    else inner = '<div class="cc-glyph">' + global.Issue.current().glyph + '</div>';
+    else inner = '';
     return '<div class="content-cover">' + inner + '</div>';
   }
 
@@ -90,10 +90,12 @@
     if (sunSign || risingSign) {
       var rec = await DS.listRecommendedContents(sunSign, risingSign);
       if (rec.length) {
-        var recTitle = '专属推荐';
-        if (sunSign && risingSign) { recTitle = '太阳' + sunSign + ' · 上升' + risingSign; }
-        else if (sunSign) { recTitle = '太阳' + sunSign; }
-        else if (risingSign) { recTitle = '上升' + risingSign; }
+        var shortSun = sunSign.replace(/座$/, '');
+        var shortRise = risingSign.replace(/座$/, '');
+        var recTitle = '专属内容';
+        if (sunSign && risingSign) { recTitle = '太阳' + shortSun + 'x上升' + shortRise + '专属内容'; }
+        else if (sunSign) { recTitle = '太阳' + shortSun + '专属内容'; }
+        else if (risingSign) { recTitle = '上升' + shortRise + '专属内容'; }
         recommendHtml = '<div class="sec-head"><span class="t">' + recTitle + '</span></div>' + rec.map(contentCard).join('');
       }
     }
@@ -126,7 +128,7 @@
       + '<div class="sec-head"><span class="t">本月推荐</span></div>'
       + testHtml
       + recommendHtml
-      + '<div class="sec-head"><span class="t">最近内容</span></div>'
+      + '<div class="sec-head"><span class="t">最近更新内容</span></div>'
       + idxHtml
       + '<div style="text-align:center;margin-top:16px"><span style="font-size:12px;color:var(--ink-3);cursor:pointer;letter-spacing:2px" onclick="Router.go(\'#/content\')">全部内容 ›</span></div>'
       + '</div>';
