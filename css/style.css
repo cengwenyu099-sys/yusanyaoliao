@@ -171,12 +171,12 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .masthead .mh-issue span { font-size: 11px; letter-spacing: 3px; color: var(--ink-2); white-space: nowrap; }
 
 .cover { position: relative; max-width: 640px; margin: 6px auto 0; height: 300px; overflow: hidden; }
-.cover .chart { position: absolute; right: -165px; top: -55px; opacity: 1; }
-.cover .c-sign { position: absolute; left: 24px; top: 56px; }
+.cover .chart { position: absolute; right: -165px; top: -55px; opacity: 1; z-index: 1; }
+.cover .c-sign { position: absolute; left: 24px; top: 56px; z-index: 2; }
 .cover .c-sign .cs-glyph { font-size: 54px; color: var(--accent-deep); font-family: 'Segoe UI Symbol', 'Noto Sans Symbols 2', sans-serif; }
 .cover .c-sign .cs-month { font-family: var(--serif); font-size: 40px; font-weight: 900; letter-spacing: 6px; margin-top: 6px; }
 .cover .c-sign .cs-en { font-size: 11px; letter-spacing: 4px; color: var(--ink-3); margin-top: 8px; }
-.cover .c-slogan { position: absolute; left: 24px; bottom: 26px; font-size: 12px; letter-spacing: 3px; color: var(--ink-2); }
+.cover .c-slogan { position: absolute; left: 24px; bottom: 26px; z-index: 2; font-size: 12px; letter-spacing: 3px; color: var(--ink-2); }
 
 .motto { max-width: 640px; margin: 0 auto; padding: 26px 32px 6px; text-align: center; }
 .motto .m-text { font-family: var(--serif); font-size: 16px; line-height: 2.1; letter-spacing: 1.5px; color: var(--ink); max-width: 320px; margin: 0 auto; text-wrap: balance; }
@@ -293,8 +293,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .toast { position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--ground); padding: 11px 24px; border-radius: 999px; font-size: 14px; letter-spacing: 1px; opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 999; max-width: 80%; text-align: center; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* 窄屏：星盘缩小右移，避免与月名相碰 */
+/* 窄屏：星盘退为背景水印，文字第一层 */
 @media (max-width: 480px) {
-  .cover .chart { right: -190px; top: -50px; }
-  .cover .chart svg { width: 360px; height: 360px; }
+  .cover .chart { opacity: .38; }
 }
