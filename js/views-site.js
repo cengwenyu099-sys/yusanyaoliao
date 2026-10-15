@@ -110,7 +110,7 @@
     }).join('');
 
     return '<div class="masthead">'
-      + '<div class="mh-top"><span>' + it.ym + ' · 月刊</span>' + authHtml + '</div>'
+      + '<div class="mh-top"><span>' + it.ym + ' · 月刊</span><span class="mh-actions"><span class="theme-toggle" onclick="SiteActions.toggleTheme()">' + global.Theme.iconSVG(18) + '</span>' + authHtml + '</span></div>'
       + '<div class="mh-name">鱼三药寮屋</div>'
       + '<div class="mh-issue"><span>' + it.sign + '月 · ' + it.range + '</span></div>'
       + '</div>'
@@ -567,6 +567,7 @@
     },
     paidHint: function () { U.toast('付费内容即将上线，敬请期待'); },
     wecomHint: function () { U.toast('企业微信号将在活动发布时公布'); },
+    toggleTheme: function () { global.Theme.toggle(); },
     redeem: async function () {
       try {
         var code = val('#redeemCode').trim();

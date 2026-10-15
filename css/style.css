@@ -297,3 +297,18 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 @media (max-width: 480px) {
   .cover .chart { opacity: .38; }
 }
+
+/* ---------- 深色系统 ---------- */
+html[data-theme="dark"] {
+  --ground: #131519;
+  --surface: #1C1F25;
+  --ink: #F2EFE7;
+  --ink-2: #B7BDC6;
+  --ink-3: #6E757F;
+  --line: #2B303A;
+  --line-strong: #464D59;
+}
+
+.mh-actions { display: flex; align-items: center; gap: 16px; }
+.theme-toggle { display: inline-flex; align-items: center; color: var(--ink-2); cursor: pointer; }
+.theme-toggle:active { opacity: .6; }
