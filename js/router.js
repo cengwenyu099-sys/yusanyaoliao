@@ -71,6 +71,7 @@
         if (!require('operator', '#/admin/login')) return;
         if (r.path[1] === 'new') { html = await global.AdminView.renderOpsEditor(s, null); }
         else if (r.path[1] === 'codes') { html = await global.AdminView.renderOpsCodes(s); }
+        else if (r.path[1] === 'issue') { html = await global.AdminView.renderOpsIssue(s); }
         else if (r.path[1] && r.path[2] === 'edit') { html = await global.AdminView.renderOpsEditor(s, r.path[1]); }
         else { html = await global.AdminView.renderOpsList(s); }
       } else if (root === 'admin') {

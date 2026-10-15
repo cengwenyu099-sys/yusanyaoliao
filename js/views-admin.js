@@ -72,6 +72,7 @@
     var toolbar = '<div class="toolbar">'
       + '<button class="btn btn-primary btn-sm" onclick="Router.go(\'#/ops/new\')">＋ 发布内容</button>'
       + '<button class="btn btn-ghost btn-sm" onclick="Router.go(\'#/ops/codes\')">兑换码管理</button>'
+      + '<button class="btn btn-ghost btn-sm" onclick="Router.go(\'#/ops/issue\')">期刊设置</button>'
       + '<button class="btn btn-ghost btn-sm" onclick="AdminActions.reset()">重置演示数据</button>'
       + '</div>';
 
@@ -315,6 +316,13 @@
       U.downloadCsv('答疑数据_' + U.fmtDate(Date.now()).replace(/-/g, '') + '.csv', rows);
       U.toast('已导出 CSV');
     },
+    saveIssue: async function () {
+      try {
+        await DS.setIssueSettings({ sign: val('#isSign'), motto: val('#isMotto') });
+        global.Issue.apply();
+        U.toast('已换刊'); Router.dispatch();
+      } catch (e) { U.toast(e.message); }
+    },
     reset: function () { Store.resetAll(); U.toast('已重置演示数据'); Router.dispatch(); },
     approve: async function (id) {
       try { await DS.approveQuestion(id, Auth.getSession().username); U.toast('已通过，进入待回复'); location.hash = '#/admin'; }
@@ -339,9 +347,29 @@
       catch (e) { U.toast(e.message); }
     }
   };
+  // ================= 运营：期刊设置（星座月刊） =================
+  async function renderOpsIssue(s) {
+    var cur = await DS.getIssueSettings();
+    var it = global.Issue.current();
+    var opts = '<option value="auto"' + (cur.sign === 'auto' || !cur.sign ? ' selected' : '') + '>自动（按公历日期切换）</option>';
+    global.Issue.ISSUES.forEach(function (i) {
+      opts += '<option value="' + i.sign + '"' + (cur.sign === i.sign ? ' selected' : '') + '>' + i.sign + '月（' + i.start[0] + '月' + i.start[1] + '日起）</option>';
+    });
+    return navbar('运营 · 期刊设置', '<span onclick="Auth.logout()">退出</span>')
+      + '<div class="page">'
+      + '<div class="sub" style="margin:8px 0 16px">当前生效：<strong style="color:var(--accent-deep)">' + esc(it.label) + ' · ' + esc(it.ym) + '</strong>' + (it.overridden ? '（手动覆盖中）' : '（自动）') + '</div>'
+      + '<div class="card">'
+      + '<div class="form-group"><label>期号（星座月）</label><select id="isSign">' + opts + '</select></div>'
+      + '<div class="form-group"><label>卷首语（留空则使用该月默认）</label><textarea id="isMotto" placeholder="' + esc(it.motto) + '">' + esc(cur.motto || '') + '</textarea></div>'
+      + '<button class="btn btn-primary" onclick="AdminActions.saveIssue()">保存并换刊</button>'
+      + '</div>'
+      + '<div class="hint-list">换刊只更换整站主题色、封面星盘与卷首语，页面结构不变。</div>'
+      + '</div>';
+  }
+
 
   global.AdminView = {
-    renderAdminLogin: renderAdminLogin, renderOpsList: renderOpsList, renderOpsCodes: renderOpsCodes, renderOpsEditor: renderOpsEditor,
+    renderAdminLogin: renderAdminLogin, renderOpsList: renderOpsList, renderOpsCodes: renderOpsCodes, renderOpsEditor: renderOpsEditor, renderOpsIssue: renderOpsIssue,
     renderReviewerList: renderReviewerList, renderReviewerDetail: renderReviewerDetail,
     renderTeacherList: renderTeacherList, renderTeacherDetail: renderTeacherDetail
   };

@@ -10,7 +10,7 @@
   var KEYS = Store.KEYS;
 
   // 种子数据版本号：改动 seed 内容后 bump 此值，用户刷新即自动刷新演示数据
-  var SEED_VERSION = '2026-10-06-v2';
+  var SEED_VERSION = '2026-10-15-v3';
 
   function seedIfNeeded() {
     if (Store.read(KEYS.seeded) === SEED_VERSION) return;

@@ -35,7 +35,7 @@
   function contentCover(c) {
     var inner;
     if (c.type === 'video') inner = '<div class="play"></div>';
-    else inner = '<span style="letter-spacing:3px">图文</span>';
+    else inner = '<div class="cc-glyph">' + global.Issue.current().glyph + '</div>';
     return '<div class="content-cover">' + inner + '</div>';
   }
 
@@ -49,56 +49,88 @@
       + '</div></a>';
   }
 
-  // ================= 首页 =================
+  // ================= 首页（月刊封面） =================
+  var SIGN_EN = { '白羊': 'ARIES', '金牛': 'TAURUS', '双子': 'GEMINI', '巨蟹': 'CANCER', '狮子': 'LEO', '处女': 'VIRGO', '天秤': 'LIBRA', '天蝎': 'SCORPIO', '射手': 'SAGITTARIUS', '摩羯': 'CAPRICORN', '水瓶': 'AQUARIUS', '双鱼': 'PISCES' };
+
   async function renderHome() {
     var s = Auth.getSession();
+    var it = global.Issue.current();
     var authHtml = s && s.role === 'user'
-      ? '<span onclick="Router.go(\'#/me\')" style="color:var(--text-2)">我的</span>'
-      : '<span onclick="Router.go(\'#/login\')" style="color:var(--text-2)">登录</span>';
+      ? '<span class="r" onclick="Router.go(\'#/me\')">我的</span>'
+      : '<span class="r" onclick="Router.go(\'#/login\')">登录</span>';
 
     var user = s && s.role === 'user' ? await DS.getUserById(s.userId) : null;
     var sunSign = user ? (user.sunSign || '') : '';
     var risingSign = user ? (user.risingSign || '') : '';
 
-    var featured = (await DS.listPublishedContents()).slice(0, 3);
-    var featuredHtml = featured.map(contentCard).join('');
+    // 栏目导向（五个圆）
+    var circles = [
+      ['测', '测一测', '#/test'],
+      ['读', '药寮方', '#/content'],
+      ['问', '来问', '#/qa'],
+      ['铺', '良方铺', '#/paid'],
+      ['聚', '活动', '#/activity']
+    ].map(function (c) {
+      return '<div class="nav-circle" onclick="Router.go(\'' + c[2] + '\')"><div class="nc-o">' + c[0] + '</div><div class="nc-l">' + c[1] + '</div></div>';
+    }).join('');
 
-    // 为您推荐：按用户太阳/上升星座匹配内容标签
+    // 本月推荐：测试
+    var tests = global.Quiz.listTests().filter(function (x) { return x.status !== 'soon'; });
+    var testHtml = tests.map(function (x) {
+      return '<div class="test-card" onclick="Router.go(\'#/test/' + x.id + '\')">'
+        + '<div class="tc-badge">' + esc(x.badge) + '</div>'
+        + '<div class="tc-title">' + esc(x.title) + '</div>'
+        + '<div class="tc-sub">' + esc(x.sub) + '</div>'
+        + '<div class="tc-meta">' + esc(x.meta) + '<span class="tc-go">开始 ›</span></div>'
+        + '</div>';
+    }).join('');
+
+    // 专属推荐：按用户太阳/上升星座匹配内容标签
     var recommendHtml = '';
     if (sunSign || risingSign) {
       var rec = await DS.listRecommendedContents(sunSign, risingSign);
       if (rec.length) {
         var recTitle = '专属推荐';
-        if (sunSign && risingSign) {
-          recTitle = '为太阳' + sunSign + ' 上升' + risingSign + '的专属推荐';
-        } else if (sunSign) {
-          recTitle = '为太阳' + sunSign + '的专属推荐';
-        } else if (risingSign) {
-          recTitle = '为上升' + risingSign + '的专属推荐';
-        }
-        recommendHtml = '<div class="section-title"><span class="t">' + recTitle + '</span></div>' + rec.map(contentCard).join('');
+        if (sunSign && risingSign) { recTitle = '太阳' + sunSign + ' · 上升' + risingSign; }
+        else if (sunSign) { recTitle = '太阳' + sunSign; }
+        else if (risingSign) { recTitle = '上升' + risingSign; }
+        recommendHtml = '<div class="sec-head"><span class="t">' + recTitle + '</span></div>' + rec.map(contentCard).join('');
       }
     }
 
-    return navbar('飞鱼十三香', authHtml, false)
-      + '<div class="brand-hero">'
-      + '<div class="b-name">鱼三药寮屋</div>'
-      + '<div class="b-slogan">为你的心，开一剂良方</div>'
+    // 最近内容（刊物索引）
+    var latest = (await DS.listPublishedContents()).slice(0, 3);
+    var idxHtml = latest.map(function (c, i) {
+      return '<div class="idx-row" onclick="Router.go(\'#/content/' + c.id + '\')">'
+        + '<span class="n">' + ('0' + (i + 1)).slice(-2) + '</span>'
+        + '<div style="flex:1;min-width:0"><div class="tt">' + esc(c.title) + '</div><div class="ss">' + esc(c.summary) + '</div></div>'
+        + '<span class="d">' + U.fmtDate(c.updatedAt) + '</span></div>';
+    }).join('');
+
+    return '<div class="masthead">'
+      + '<div class="mh-top"><span>' + it.ym + ' · 月刊</span>' + authHtml + '</div>'
+      + '<div class="mh-name">鱼三药寮屋</div>'
+      + '<div class="mh-issue"><span>' + it.label + ' · ' + it.ym + '</span></div>'
       + '</div>'
-      + '<div class="nav-grid">'
-      + '<div class="nav-cell" style="grid-column:1/-1" onclick="Router.go(\'#/test\')"><div class="nc-title">测一测</div><div class="nc-desc">测试中心 · 看见自己 · 持续上新</div></div>'
-      + '<div class="nav-cell" onclick="Router.go(\'#/content\')"><div class="nc-title">药寮方</div><div class="nc-desc">深度图文 · 视频</div></div>'
-      + '<div class="nav-cell" onclick="Router.go(\'#/qa\')"><div class="nc-title">来问</div><div class="nc-desc">向飞鱼十三香提问，一对一答疑</div></div>'
-      + '<div class="nav-cell" onclick="Router.go(\'#/activity\')"><div class="nc-title">活动</div><div class="nc-desc">线下沙龙与活动宣发</div></div>'
-      + '<div class="nav-cell" onclick="Router.go(\'#/paid\')"><div class="nc-title">良方铺</div><div class="nc-desc">知识付费内容（即将上线）</div></div>'
+      + '<div class="cover">'
+      + '<div class="chart">' + global.Issue.chartSVG(430) + '</div>'
+      + '<div class="c-sign"><div class="cs-glyph">' + it.glyph + '</div><div class="cs-month">' + it.sign + '月</div><div class="cs-en">' + (SIGN_EN[it.sign] || '') + ' SEASON</div></div>'
+      + '<div class="c-slogan">把心事，说给星图听</div>'
       + '</div>'
-      + '<div class="page" style="margin-top:8px">'
+      + '<div class="motto">'
+      + '<div class="m-text">「' + esc(it.motto) + '」</div>'
+      + '<div class="m-by">卷首语 · 飞鱼十三香</div>'
+      + '</div>'
+      + '<div class="nav-circles">' + circles + '</div>'
+      + '<div class="page">'
+      + '<div class="sec-head"><span class="t">本月推荐</span></div>'
+      + testHtml
       + recommendHtml
-      + '<div class="section-title"><span class="t">最近内容</span><span class="more" onclick="Router.go(\'#/content\')">全部 ›</span></div>'
-      + featuredHtml
+      + '<div class="sec-head"><span class="t">最近内容</span></div>'
+      + idxHtml
+      + '<div style="text-align:center;margin-top:16px"><span style="font-size:12px;color:var(--ink-3);cursor:pointer;letter-spacing:2px" onclick="Router.go(\'#/content\')">全部内容 ›</span></div>'
       + '</div>';
   }
-
   // ================= 登录 =================
   function renderLogin() {
     return '<div class="auth-wrap">'
@@ -144,34 +176,63 @@
       + '</div></div>';
   }
 
-  // ================= 付费墙 =================
+  // ================= 良方铺（付费阶梯预告） =================
   async function renderPaid() {
-    var list = await DS.listPaidContents();
-    var body = list.map(function (p) {
-      return '<div class="paid-card" onclick="SiteActions.paidHint()">'
-        + '<div class="pc-cover">' + esc(p.type === 'course' ? '课程' : p.type === 'consult' ? '咨询' : p.type === 'column' ? '专栏' : '回放') + '</div>'
+    var tiers = [
+      ['01', '小额单品', '一篇深度长文、一份月度指南，¥9.9 – 29.9 随手带走'],
+      ['02', '付费视频', '主题视频内容，第三方平台观看'],
+      ['03', '付费课程', '系统小课，学会看懂自己的星图'],
+      ['04', '订阅会员', '每月更新，长期陪伴的基本盘']
+    ];
+    var tierHtml = tiers.map(function (x) {
+      return '<div class="paid-card">'
+        + '<div class="pc-cover">' + x[0] + '</div>'
         + '<div class="pc-body">'
-        + '<div class="pc-title">' + esc(p.title) + '</div>'
-        + '<div class="pc-summary">' + esc(p.summary) + '</div>'
-        + '<div class="pc-foot"><span class="price">' + esc(p.price) + '</span><span class="lock-tag">未解锁</span></div>'
+        + '<div class="pc-title">' + x[1] + '</div>'
+        + '<div class="pc-summary">' + x[2] + '</div>'
+        + '<div class="pc-foot"><span class="lock-tag">即将上线</span></div>'
         + '</div></div>';
     }).join('');
 
+    var list = await DS.listPaidContents();
+    var previewHtml = '';
+    if (list.length) {
+      var cards = list.map(function (p) {
+        return '<div class="paid-card" onclick="SiteActions.paidHint()">'
+          + '<div class="pc-cover">' + esc(p.type === 'course' ? '课程' : p.type === 'consult' ? '咨询' : p.type === 'column' ? '专栏' : '回放') + '</div>'
+          + '<div class="pc-body">'
+          + '<div class="pc-title">' + esc(p.title) + '</div>'
+          + '<div class="pc-summary">' + esc(p.summary) + '</div>'
+          + '<div class="pc-foot"><span class="price">' + esc(p.price) + '</span><span class="lock-tag">未解锁</span></div>'
+          + '</div></div>';
+      }).join('');
+      previewHtml = '<div class="sec-head"><span class="t">铺内预览</span></div>' + cards;
+    }
+
     return navbar('良方铺', '')
       + '<div class="page">'
-      + '<div class="sub" style="margin:8px 0 16px">知识付费内容即将上线，当前为演示占位</div>'
-      + (body || '<div class="empty">暂无付费内容</div>')
+      + '<div class="test-hero" style="padding:24px 0 2px"><div class="th-title" style="font-size:22px">良方铺</div><div class="th-sub">知识付费内容即将上线，阶梯先睹为快</div></div>'
+      + '<div class="sec-head"><span class="t">上架预告</span></div>'
+      + tierHtml
+      + previewHtml
       + '</div>';
   }
-
-  // ================= 活动占位 =================
+  // ================= 活动 =================
   async function renderActivity() {
     return navbar('活动', '')
       + '<div class="page">'
-      + '<div class="placeholder-panel"><div class="p-title">活动宣发区</div><div style="margin-top:8px">线下沙龙等活动将在这里发布</div><div class="small" style="margin-top:12px">敬请期待</div></div>'
-      + '</div>';
+      + '<div class="test-hero" style="padding:24px 0 4px"><div class="th-title" style="font-size:22px">活动</div><div class="th-sub">线下沙龙与活动宣发</div></div>'
+      + '<div class="placeholder-panel">'
+      + '<div class="p-title">第一场线下沙龙，筹备中</div>'
+      + '<div style="margin-top:8px">从线上到线下，想和你真正见一面。</div>'
+      + '<div class="small" style="margin-top:12px">时间地点确定后，将在这里第一时间发布</div>'
+      + '</div>'
+      + '<div class="sec-head"><span class="t">报名与咨询</span></div>'
+      + '<div class="card" style="text-align:center">'
+      + '<div class="sub" style="margin-bottom:14px">活动报名信息将通过企业微信发布<br>添加企业微信，第一时间收到邀请</div>'
+      + '<button class="btn btn-primary" onclick="SiteActions.wecomHint()">添加企业微信</button>'
+      + '</div></div>';
   }
-
   // ================= 测一测（测试中心） =================
   var QuizState = { testId: null, idx: 0, answers: [] };
   function currentTest() { return global.Quiz.getTest(QuizState.testId); }
@@ -193,7 +254,7 @@
     }).join('');
     return navbar('测一测', '')
       + '<div class="quiz-wrap">'
-      + '<div class="test-hero"><div class="th-title">测一测</div><div class="th-sub">看见自己，从一次测试开始</div></div>'
+      + '<div class="test-hero"><div class="th-title">本月推荐</div><div class="th-sub">看见自己，从一次测试开始</div></div>'
       + cards
       + '</div>';
   }
@@ -280,7 +341,7 @@
     });
     html += '<div class="qr-tension"><div class="qr-section-t">核心矛盾</div>' + esc(tension) + '</div>';
     if (actions.length) {
-      html += '<div class="qr-section-t" style="margin-top:16px">行动处方（本周就能做）</div>';
+      html += '<div class="qr-section-t" style="margin-top:16px">本月行动（本周就能做）</div>';
       actions.forEach(function (a, i) {
         html += '<div class="qr-action"><span class="qr-an">' + (i + 1) + '</span>' + esc(a.text) + '</div>';
       });
@@ -306,7 +367,7 @@
     var acts = test.prescriptions(levels);
     if (acts.length) {
       lines.push('');
-      lines.push('行动处方：');
+      lines.push('本月行动：');
       acts.forEach(function (a, i) { lines.push((i + 1) + '. ' + a.text); });
     }
     lines.push('');
@@ -345,6 +406,7 @@
   // ================= 答疑 =================
   async function renderQaHome() {
     var s = Auth.getSession();
+    var quota = await DS.getQuotaRemaining();
     var user = s && s.role === 'user' ? await DS.getUserById(s.userId) : null;
     var credits = user ? (user.questionCredits || 0) : 0;
 
@@ -352,7 +414,7 @@
     if (!user) {
       actionHtml = '<div class="card" style="text-align:center"><div class="sub" style="margin-bottom:12px">登录后即可提问</div><button class="btn btn-primary" onclick="Router.go(\'#/login\')">去登录</button></div>';
     } else if (credits > 0) {
-      actionHtml = '<div class="card" style="text-align:center"><div class="sub" style="margin-bottom:12px">你还有 <strong style="color:var(--text)">' + credits + '</strong> 次提问机会</div><button class="btn btn-primary" onclick="Router.go(\'#/qa/ask\')">我要提问</button></div>';
+      actionHtml = '<div class="card" style="text-align:center"><div class="sub" style="margin-bottom:12px">你还有 <strong style="color:var(--ink)">' + credits + '</strong> 次提问机会</div><button class="btn btn-primary" onclick="Router.go(\'#/qa/ask\')">我要提问</button></div>';
     } else {
       actionHtml = '<div class="card" style="text-align:center"><div class="sub" style="margin-bottom:12px">仅购买用户可提问，你还没有提问机会</div><button class="btn btn-primary" onclick="Router.go(\'#/redeem\')">兑换提问机会</button></div>';
     }
@@ -363,7 +425,7 @@
 
     return navbar('来问', '')
       + '<div class="page">'
-      + '<div class="brand-hero" style="padding:20px 0 12px"><div class="b-slogan">把你的困惑交给飞鱼十三香，一对一为你开方</div></div>'
+      + '<div class="test-hero" style="padding:22px 0 16px;text-align:center"><div class="th-sub" style="font-size:13px;letter-spacing:2px">把你的困惑交给飞鱼十三香，一对一慢慢聊</div><div style="margin-top:10px;font-size:12px;letter-spacing:2px;color:var(--ink-3)">剩余 <strong style="color:var(--accent-deep);font-size:17px">' + quota + '</strong> 个名额 · 限前 500 名</div></div>'
       + actionHtml
       + '<div class="section-title"><span class="t">入口</span></div>'
       + myHtml
@@ -382,15 +444,16 @@
 
   async function renderRedeem(s) {
     var user = await DS.getUserById(s.userId);
+    var quota = await DS.getQuotaRemaining();
     var credits = user ? (user.questionCredits || 0) : 0;
     return navbar('兑换提问机会', '')
       + '<div class="page">'
       + '<div class="card" style="text-align:center">'
-      + '<div class="sub" style="margin-bottom:14px">当前剩余 <strong style="color:var(--text)">' + credits + '</strong> 次提问机会</div>'
+      + '<div class="sub" style="margin-bottom:14px">当前剩余 <strong style="color:var(--ink)">' + credits + '</strong> 次提问机会</div>'
       + '<div class="form-group"><input type="text" id="redeemCode" placeholder="输入兑换码" style="text-align:center;letter-spacing:2px"></div>'
       + '<button class="btn btn-primary" onclick="SiteActions.redeem()">兑换</button>'
       + '</div>'
-      + '<div class="hint-list">演示兑换码：YSYL0001 / YSYL0002（未使用）<br>每个码可兑换 1 次提问机会，用完失效。</div>'
+      + '<div class="hint-list">剩余 ' + quota + ' 个名额 · 限前 500 名购买用户<br>演示兑换码：YSYL0001 / YSYL0002（未使用）<br>每个码可兑换 1 次提问机会，用完失效。</div>'
       + '</div>';
   }
 
@@ -501,6 +564,7 @@
       try { await Auth.loginWithWechat(); } catch (e) { U.toast(e.message); }
     },
     paidHint: function () { U.toast('付费内容即将上线，敬请期待'); },
+    wecomHint: function () { U.toast('企业微信号将在活动发布时公布'); },
     redeem: async function () {
       try {
         var code = val('#redeemCode').trim();

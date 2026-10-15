@@ -15,6 +15,7 @@
     redeemCodes: 'redeemCodes',
     admins: 'admins',
     session: 'session',
+    issue: 'issue',
     seeded: 'seeded'
   };
 

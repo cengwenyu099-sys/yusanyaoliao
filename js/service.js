@@ -281,6 +281,24 @@
     q.answer = answer; q.status = 'answered'; q.answerAt = Date.now(); q.answeredBy = teacher; q.updatedAt = Date.now();
     _save(KEYS.questions, qs); return q;
   }
+  // ================= 期刊设置（星座月刊） =================
+  function getIssueSettingsSync() {
+    return Store.read(KEYS.issue) || { sign: 'auto', motto: '' };
+  }
+  async function getIssueSettings() { return getIssueSettingsSync(); }
+  async function setIssueSettings(payload) {
+    var s = { sign: payload.sign || 'auto', motto: String(payload.motto || '').trim() };
+    Store.write(KEYS.issue, s);
+    return s;
+  }
+
+  // ================= 答疑名额（前 500 名） =================
+  var QUOTA_TOTAL = 500;
+  async function getQuotaRemaining() {
+    var used = _list(KEYS.redeemCodes).filter(function (c) { return c.status === 'used'; }).length;
+    return Math.max(0, QUOTA_TOTAL - used);
+  }
+
 
   // ================= 导出 =================
   async function exportRows() {
@@ -306,6 +324,7 @@
     listAllForReviewer: listAllForReviewer, listForTeacher: listForTeacher,
     getQuestionForUser: getQuestionForUser, getQuestionForAdmin: getQuestionForAdmin, getQuestionForTeacher: getQuestionForTeacher,
     approveQuestion: approveQuestion, rejectQuestion: rejectQuestion, setVisibility: setVisibility, answerQuestion: answerQuestion,
+    getIssueSettingsSync: getIssueSettingsSync, getIssueSettings: getIssueSettings, setIssueSettings: setIssueSettings, getQuotaRemaining: getQuotaRemaining,
     exportRows: exportRows
   };
 })(window);

@@ -1,4 +1,4 @@
-# 鱼三药寮屋 · 私域内容空间（本地 Demo）
+# 鱼三药寮屋 · 星座月刊（本地 Demo）
 
 公众号 H5 内容平台：**内容分发（主干）+ 答疑（钩子）+ 活动位（占位）+ 付费内容墙（预留）**。
 用户之间不互动（合规考量）。本版不接任何真实 API / 微信授权 / 支付，全部本地模拟。
@@ -48,12 +48,13 @@
 ```
 yusanyaoliao/
 ├── index.html           # 入口
-├── css/style.css        # 极简黑白冷感样式
+├── css/style.css        # 设计令牌驱动（刊物化 × 星盘圆母题）
 ├── js/
 │   ├── utils.js         # 纯工具
 │   ├── storage.js       # 存储抽象（localStorage）
 │   ├── seed.js          # 种子数据
 │   ├── service.js       # ★ service 层（数据唯一入口 + 权限硬过滤 + 状态机）
+│   ├── issue.js         # ★ 星座月刊系统（期号/主题色/卷首语/星盘圆 SVG）
 │   ├── auth.js          # 登录态（预留 openid / loginWithWechat）
 │   ├── router.js        # hash 路由 + 守卫
 │   ├── views-site.js    # 用户前端
