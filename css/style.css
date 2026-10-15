@@ -299,6 +299,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 }
 
 /* ---------- 深色系统 ---------- */
+html[data-theme="dark"] .masthead .mh-top .mh-meta { color: #89a0bf; }
 html[data-theme="dark"] {
   --ground: #131519;
   --surface: #1C1F25;

@@ -110,7 +110,7 @@
     }).join('');
 
     return '<div class="masthead">'
-      + '<div class="mh-top"><span>' + it.ym + ' · 月刊</span><span class="mh-actions"><span class="theme-toggle" onclick="SiteActions.toggleTheme()">' + global.Theme.iconSVG(18) + '</span>' + authHtml + '</span></div>'
+      + '<div class="mh-top"><span class="mh-meta">飞鱼十三香</span><span class="mh-actions"><span class="theme-toggle" onclick="SiteActions.toggleTheme()">' + global.Theme.iconSVG(18) + '</span>' + authHtml + '</span></div>'
       + '<div class="mh-name">鱼三药寮屋</div>'
       + '<div class="mh-issue"><span>' + it.sign + '月 · ' + it.range + '</span></div>'
       + '</div>'
