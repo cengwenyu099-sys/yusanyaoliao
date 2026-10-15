@@ -37,6 +37,16 @@
     return best.sign;
   }
 
+  function rangeOf(sign) {
+    var idx = -1;
+    ISSUES.forEach(function (i, ix) { if (i.sign === sign) idx = ix; });
+    if (idx < 0) return '';
+    var start = ISSUES[idx].start;
+    var next = ISSUES[(idx + 1) % 12].start;
+    var d = new Date(2026, next[0] - 1, next[1]);
+    d.setDate(d.getDate() - 1);
+    return start[0] + '.' + start[1] + '-' + (d.getMonth() + 1) + '.' + d.getDate();
+  }
   function resolve() {
     var now = new Date();
     var settings = (global.DataService && global.DataService.getIssueSettingsSync)
@@ -50,6 +60,7 @@
       accent: def.accent,
       deep: def.deep,
       label: def.sign + '月号',
+      range: rangeOf(def.sign),
       ym: ym,
       motto: (settings && settings.motto) ? settings.motto : def.motto,
       overridden: !!(settings && settings.sign && settings.sign !== 'auto')

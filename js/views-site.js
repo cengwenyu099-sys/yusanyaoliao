@@ -66,9 +66,9 @@
     // 栏目导向（五个圆）
     var circles = [
       ['测', '测一测', '#/test'],
-      ['读', '药寮方', '#/content'],
+      ['看', '药寮方', '#/content'],
       ['问', '来问', '#/qa'],
-      ['铺', '良方铺', '#/paid'],
+      ['学', '良方铺', '#/paid'],
       ['聚', '活动', '#/activity']
     ].map(function (c) {
       return '<div class="nav-circle" onclick="Router.go(\'' + c[2] + '\')"><div class="nc-o">' + c[0] + '</div><div class="nc-l">' + c[1] + '</div></div>';
@@ -110,16 +110,16 @@
     return '<div class="masthead">'
       + '<div class="mh-top"><span>' + it.ym + ' · 月刊</span>' + authHtml + '</div>'
       + '<div class="mh-name">鱼三药寮屋</div>'
-      + '<div class="mh-issue"><span>' + it.label + ' · ' + it.ym + '</span></div>'
+      + '<div class="mh-issue"><span>' + it.sign + '月 · ' + it.range + '</span></div>'
       + '</div>'
       + '<div class="cover">'
       + '<div class="chart">' + global.Issue.chartSVG(430) + '</div>'
       + '<div class="c-sign"><div class="cs-glyph">' + it.glyph + '</div><div class="cs-month">' + it.sign + '月</div><div class="cs-en">' + (SIGN_EN[it.sign] || '') + ' SEASON</div></div>'
-      + '<div class="c-slogan">把心事，说给星图听</div>'
+      + '<div class="c-slogan">把心事，说给星星听</div>'
       + '</div>'
       + '<div class="motto">'
       + '<div class="m-text">「' + esc(it.motto) + '」</div>'
-      + '<div class="m-by">卷首语 · 飞鱼十三香</div>'
+      + '<div class="m-by">本月首语 · 十三</div>'
       + '</div>'
       + '<div class="nav-circles">' + circles + '</div>'
       + '<div class="page">'
