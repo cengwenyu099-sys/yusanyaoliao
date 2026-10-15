@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>测试官调试台 · Prompt Lab</title>
+<style>
+  :root {
+    --bg: #f7f4ee; --card: #ffffff; --border: #e7e2d6; --border-strong: #cfc8b8;
+    --text: #223033; --text-2: #5a6a6d; --text-3: #98a4a6;
+    --primary: #2f5d62; --accent: #c29a5b; --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 40px; }
+  h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+  .hint { font-size: 12px; color: var(--text-3); margin: 6px 0 16px; line-height: 1.7; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .card h2 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-2); }
+  label { display: block; font-size: 12px; color: var(--text-2); margin: 10px 0 6px; }
+  input[type="text"], input[type="password"], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--text); background: var(--card); outline: none; }
+  input:focus, textarea:focus { border-color: var(--primary); }
+  textarea { resize: vertical; line-height: 1.6; }
+  .tip { font-size: 11px; color: var(--text-3); margin-top: 6px; line-height: 1.6; }
+  .model-chip { display: inline-block; padding: 4px 12px; border: 1px solid var(--border-strong); border-radius: 14px; font-size: 12px; margin: 6px 6px 0 0; cursor: pointer; color: var(--text-2); user-select: none; }
+  .model-chip:active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .row { display: flex; gap: 10px; margin-top: 12px; }
+  .btn { flex: 1; padding: 11px 16px; border-radius: var(--radius); border: 1px solid transparent; font-size: 14px; font-weight: 500; cursor: pointer; letter-spacing: .5px; }
+  .btn:active { opacity: .7; }
+  .btn-primary { background: linear-gradient(180deg, #2f5d62, #24494d); color: #fff; }
+  .btn-ghost { background: var(--card); color: var(--text); border-color: var(--border-strong); }
+  .chat { margin-bottom: 14px; }
+  .msg { display: flex; margin-bottom: 10px; }
+  .msg.user { justify-content: flex-end; }
+  .bubble { max-width: 85%; padding: 11px 13px; border-radius: var(--radius); font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+  .msg.ai .bubble { background: var(--card); border: 1px solid var(--border); }
+  .msg.user .bubble { background: var(--primary); color: #fff; }
+  .msg.err .bubble { background: #fcebeb; border: 1px solid #f09595; color: #a32d2d; font-size: 13px; max-width: 100%; }
+  .report { background: var(--card); border: 1px solid var(--accent); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
+  .report .rt { font-size: 15px; font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+  .report .rb { font-size: 14px; line-height: 1.9; white-space: pre-wrap; word-break: break-word; }
+  .thinking { color: var(--text-3); font-size: 13px; letter-spacing: 1px; }
+  .inputbar { position: sticky; bottom: 0; display: flex; gap: 10px; align-items: flex-end; padding: 10px 0 6px; background: var(--bg); }
+  .inputbar textarea { flex: 1; min-height: 46px; max-height: 140px; resize: none; }
+  .inputbar .btn { flex: 0 0 auto; width: auto; padding: 0 22px; height: 46px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>测试官调试台</h1>
+  <div class="hint">独立的 prompt 试验场：改提示词 → 清空重开 → 立即测效果。Key 只存本机浏览器，不上传。调满意后把提示词发给飞鱼，固化进网站。</div>
+
+  <div class="card">
+    <h2>① 连接配置</h2>
+    <label>Kimi API Key</label>
+    <input type="password" id="key" placeholder="sk-...">
+    <label>模型</label>
+    <input type="text" id="model" placeholder="kimi-k2.6">
+    <div class="row">
+      <button class="btn btn-ghost" onclick="listModels()">查看我的 Key 可用模型</button>
+    </div>
+    <div id="modelList"></div>
+    <div class="tip">老模型（moonshot-v1 系列、kimi-k2-0905-preview 等）已于 2026 年停用。不确定就点上面的按钮，一键列出你账户可用的模型，点击自动填入。</div>
+  </div>
+
+  <div class="card">
+    <h2>② 测试官提示词（随便改）</h2>
+    <textarea id="prompt" rows="16"></textarea>
+    <div class="row">
+      <button class="btn btn-primary" onclick="saveAll()">保存配置</button>
+      <button class="btn btn-ghost" onclick="resetChat()">清空对话重开</button>
+    </div>
+    <div class="tip">改了提示词后，点「清空对话重开」才会按新提示词重新开始。</div>
+  </div>
+
+  <div class="chat" id="chat"></div>
+
+  <div class="inputbar">
+    <textarea id="input" placeholder="写下你的回答…（Enter 发送，Shift+Enter 换行）"></textarea>
+    <button class="btn btn-primary" onclick="send()">发送</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+var LS = { key: 'lab_key', model: 'lab_model', prompt: 'lab_prompt', chat: 'lab_chat' };
+var API_URL = 'https://api.moonshot.cn/v1/chat/completions';
+var OPENING = '（用户已进入测试，请做简短开场并抛出第一个问题）';
+var DEFAULT_MODEL = 'kimi-k2.6';
+
+var DEFAULT_PROMPT = [
+  '你是「鱼三药寮屋」的 AI 人生战略顾问，基于 Dan Koe 的 Human 3.0 人生模型，为用户做一次完整的人生规划采访。',
+  '',
+  '【模型框架】',
+  '四个象限：',
+  '- 心智 Mind：认知、情绪、思维模式、自我意识',
+  '- 身体 Body：健康、睡眠、运动、精力',
+  '- 精神 Spirit：价值观、意义感、人际关系、人生方向',
+  '- 事业 Vocation：工作、收入、技能、商业能力、自由度',
+  '三个层级（每个象限分别判断用户更接近哪层）：',
+  '- L1 生存层：被本能、情绪和环境推着走，条件反射式生活',
+  '- L2 觉醒层：开始自我观察，有策略地管理自己、设计生活',
+  '- L3 创造层：身份与行动合一，按自己的愿景主动创造现实',
+  '',
+  '【采访规则】',
+  '1. 每次只问 1 个最重要的问题，简短有力，绝不一次抛多个问题。',
+  '2. 根据用户回答继续追问最关键的点，像真正的人生战略顾问：温和但直接，敢于指出用户没说透的地方。',
+  '3. 全程重点识别：用户真正想要的人生；行为与目标之间的矛盾；反复拖延和逃避的问题；限制性的生活习惯、身份认同和环境。',
+  '4. 通常采访 6-10 轮。当你判断已足够了解用户，就输出报告。',
+  '5. 开场白：用 1-2 句话介绍你和这个模型，立刻抛出第一个问题。',
+  '',
+  '【报告格式】',
+  '信息足够时输出完整报告，严格遵守：',
+  '- 第一行固定为：【报告】Human 3.0 人生战略规划',
+  '- 一、四象限诊断：心智 / 身体 / 精神 / 事业，每个象限给出「当前层级（L1/L2/L3）+ 具体依据（引用用户原话）」。',
+  '- 二、核心矛盾：最关键的一个「想要 vs 行为」的错位。',
+  '- 三、行动处方：每个象限 1 个本周就能做的最小动作，具体可执行。',
+  '- 四、结尾固定附上：「这份报告画出了你此刻的坐标。这些模式背后往往有更深的印记——如果你想从星盘的角度看看它们的来源，来「来问」找飞鱼十三香聊聊，或加企微深谈。」',
+  '',
+  '【边界】',
+  '- 这是自我探索工具，不做心理诊断、不做医疗建议、不预测命运。',
+  '- 不给空泛安慰；指出矛盾时对事不对人。'
+].join('\n');
+
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function store(k, v) { localStorage.setItem(k, v); }
+function read(k, d) { return localStorage.getItem(k) || d || ''; }
+function getChat() { try { return JSON.parse(read(LS.chat, '[]')); } catch (e) { return []; } }
+function setChat(list) { store(LS.chat, JSON.stringify(list)); }
+function pushMsg(role, content) { var l = getChat(); l.push({ role: role, content: content }); setChat(l); }
+
+function saveAll(silent) {
+  store(LS.key, $('key').value.trim());
+  store(LS.model, $('model').value.trim() || DEFAULT_MODEL);
+  store(LS.prompt, $('prompt').value);
+  if (!silent) toast('已保存');
+  // 保存后若对话尚未开始且已有 Key，自动让 AI 开场
+  if (!getChat().length && read(LS.key)) startInterview();
+}
+
+async function listModels() {
+  var key = $('key').value.trim();
+  if (!key) { toast('先填 API Key'); return; }
+  var box = $('modelList');
+  box.innerHTML = '<div class="tip">查询中…</div>';
+  try {
+    var resp = await fetch('https://api.moonshot.cn/v1/models', {
+      headers: { 'Authorization': 'Bearer ' + key }
+    });
+    if (!resp.ok) { box.innerHTML = '<div class="tip">查询失败（HTTP ' + resp.status + '）——Key 可能无效</div>'; return; }
+    var data = await resp.json();
+    var ids = (data.data || []).map(function (m) { return m.id; });
+    if (!ids.length) { box.innerHTML = '<div class="tip">该 Key 下没有可用模型</div>'; return; }
+    box.innerHTML = '<div class="tip">你的 Key 可用以下模型（点击填入）：</div><div>' +
+      ids.map(function (id) { return '<span class="model-chip" onclick="pickModel(\'' + esc(id) + '\')">' + esc(id) + '</span>'; }).join('') +
+      '</div>';
+  } catch (e) {
+    box.innerHTML = '<div class="tip">查询出错：' + esc(e.message) + '</div>';
+  }
+}
+
+function pickModel(id) {
+  $('model').value = id;
+  saveAll(true);
+  toast('已选 ' + id);
+}
+
+function toast(msg) {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#2f5d62;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;z-index:99';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function () { t.remove(); }, 1800);
+}
+
+function scrollBottom() { setTimeout(function () { window.scrollTo(0, document.body.scrollHeight); }, 30); }
+
+function appendMsg(role, content) {
+  var box = $('chat');
+  if (role === 'user' && content === OPENING) return;
+  if (role === 'err') {
+    var er = document.createElement('div');
+    er.className = 'msg err';
+    er.innerHTML = '<div class="bubble">' + esc(content) + '</div>';
+    box.appendChild(er); return;
+  }
+  if (role === 'assistant' && content.indexOf('【报告】') === 0) {
+    var lines = content.split('\n');
+    var card = document.createElement('div');
+    card.className = 'report';
+    card.innerHTML = '<div class="rt">' + esc(lines[0].replace('【报告】', '').trim()) + '</div><div class="rb">' + esc(lines.slice(1).join('\n').trim()) + '</div>';
+    box.appendChild(card); return;
+  }
+  var row = document.createElement('div');
+  row.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+  row.innerHTML = '<div class="bubble">' + esc(content) + '</div>';
+  box.appendChild(row);
+}
+
+var thinkingEl = null;
+function showThinking() {
+  thinkingEl = document.createElement('div');
+  thinkingEl.className = 'msg ai';
+  thinkingEl.innerHTML = '<div class="bubble thinking">顾问正在思考…</div>';
+  $('chat').appendChild(thinkingEl);
+  scrollBottom();
+}
+function hideThinking() { if (thinkingEl) { thinkingEl.remove(); thinkingEl = null; } }
+
+async function askAI() {
+  showThinking();
+  try {
+    var key = read(LS.key);
+    if (!key) throw new Error('请先在①里填写 Kimi API Key 并保存');
+    var messages = [{ role: 'system', content: read(LS.prompt, DEFAULT_PROMPT) }].concat(getChat());
+    var resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: read(LS.model, DEFAULT_MODEL), messages: messages })
+    });
+    hideThinking();
+    if (!resp.ok) {
+      var detail = '';
+      try { detail = JSON.stringify(await resp.json()); } catch (e) { detail = await resp.text(); }
+      appendMsg('err', 'AI 请求失败（HTTP ' + resp.status + '）\n' + detail + '\n\n排查：① 模型名对不对 ② Key 有没有多空格 ③ 账户余额');
+      return;
+    }
+    var data = await resp.json();
+    var text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (!text) { appendMsg('err', 'AI 返回为空，请重试'); return; }
+    pushMsg('assistant', text);
+    appendMsg('assistant', text);
+    scrollBottom();
+  } catch (e) {
+    hideThinking();
+    appendMsg('err', '请求出错：' + e.message + '\n（如果是 Failed to fetch：检查网络，或浏览器拦截了跨域——换 localhost 方式打开）');
+  }
+}
+
+function send() {
+  saveAll(true); // 宽容处理：填了 Key 没点保存也能直接用
+  var text = $('input').value.trim();
+  if (!text) return;
+  $('input').value = '';
+  appendMsg('user', text);
+  pushMsg('user', text);
+  scrollBottom();
+  askAI();
+}
+
+function resetChat() {
+  if (!confirm('清空对话，按当前提示词重新开始？')) return;
+  saveAll(true);
+  setChat([]);
+  $('chat').innerHTML = '';
+  startInterview();
+}
+
+function startInterview() {
+  var history = getChat();
+  history.forEach(function (m) { appendMsg(m.role, m.content); });
+  if (!history.length) {
+    if (!read(LS.key)) { appendMsg('err', '还没配置 API Key：先在①里填 Key 和模型，点「保存配置」'); return; }
+    pushMsg('user', OPENING);
+    askAI();
+  } else {
+    scrollBottom();
+  }
+}
+
+window.addEventListener('load', function () {
+  $('key').value = read(LS.key);
+  $('model').value = read(LS.model, DEFAULT_MODEL);
+  $('prompt').value = read(LS.prompt, DEFAULT_PROMPT);
+  $('input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+  startInterview();
+});
+</script>
+</body>
+</html>
