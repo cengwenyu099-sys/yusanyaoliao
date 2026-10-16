@@ -50,8 +50,6 @@
   }
 
   // ================= 首页（月刊封面） =================
-  var SIGN_EN = { '白羊': 'ARIES', '金牛': 'TAURUS', '双子': 'GEMINI', '巨蟹': 'CANCER', '狮子': 'LEO', '处女': 'VIRGO', '天秤': 'LIBRA', '天蝎': 'SCORPIO', '射手': 'SAGITTARIUS', '摩羯': 'CAPRICORN', '水瓶': 'AQUARIUS', '双鱼': 'PISCES' };
-
   async function renderHome() {
     var s = Auth.getSession();
     var it = global.Issue.current();
@@ -116,12 +114,12 @@
       + '</div>'
       + '<div class="cover">'
       + '<div class="chart">' + global.Issue.chartSVG(430) + '</div>'
-      + '<div class="c-sign"><div class="cs-glyph">' + it.glyph + '</div><div class="cs-month">' + it.sign + '月</div><div class="cs-en">' + (SIGN_EN[it.sign] || '') + ' SEASON</div></div>'
+      + '<div class="c-sign"><div class="cs-glyph">' + it.glyph + '</div><div class="cs-month">' + it.sign + '月</div><div class="cs-en">FEIYU SHISAN</div></div>'
       + '<div class="c-slogan">把心事，说给星星听</div>'
       + '</div>'
       + '<div class="motto">'
       + '<div class="m-text">「' + esc(it.motto) + '」</div>'
-      + '<div class="m-by">本月首语 · 十三</div>'
+      + '<div class="m-by">' + it.sign + '月首语 · 十三</div>'
       + '</div>'
       + '<div class="nav-circles">' + circles + '</div>'
       + '<div class="page">'
